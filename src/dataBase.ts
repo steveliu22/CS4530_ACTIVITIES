@@ -51,16 +51,76 @@ export class DataBase implements IDataBase {
 
         
     deleteStudent (id: StudentID): void  {
-        throw new Error("not implemented yet")  
-    }   // hmm, what to do about errors??
+        let studentTranscript = this.getTranscript(id);
+
+        const transcriptIndex = this.transcripts.findIndex((transcript) => {
+            return transcript.student.studentID === id;
+        })
+
+        this.transcripts.splice(transcriptIndex, 1); 
+    }   
+
+
     addGrade (id: Student, course: Course, courseGrade: CourseGrade) : void {
-        throw new Error("not implemented yet") 
+        
+        let studentTranscript:Transcript = this.getTranscript(id.studentID);
+
+        //if course do not match
+        if(course != courseGrade.course) {
+            throw new Error("Courses do not align");
+        }
+
+
+        //Check valid grade
+        if(courseGrade.grade > 100 || courseGrade.grade < 0) {
+            throw new Error("Not A Valid Grade"); 
+        }
+
+        let doesCourseExists = false;
+        let orginalCourseGrade = undefined;
+
+        studentTranscript.grades.forEach((cg) =>
+            {
+                if(cg.course === course) {
+                    doesCourseExists = true;
+                    orginalCourseGrade = cg;
+                }
+            }
+        )
+
+        if(doesCourseExists) {
+            //replacing old course grade
+            orginalCourseGrade.grade == courseGrade.grade;
+        }
+        else {
+            studentTranscript.grades.push(courseGrade);
+        }
+ 
+
+
+
     }
     getGrade (id: Student, course: Course) : CourseGrade {
-        throw new Error("not implemented yet") 
+        const studentTranscript = this.getTranscript(id.studentID);
+
+        studentTranscript.grades.forEach(grade => {
+
+            if(grade.course === course) {
+                return grade;
+            }
+            
+        });
+
+        throw new Error("Could not find course")
     }
     getAllStudentIDs () : StudentID[] {
-        throw new Error("not implemented yet") 
+        const allIDs : StudentID[] = [];
+
+        this.transcripts.forEach((transcript) => {
+            allIDs.push(transcript.student.studentID);
+        })
+
+        return allIDs;
     }
     
     

@@ -1,0 +1,12 @@
+#2
+Adding new grade to existing student
+Replacing student grade with a better new grade
+Not replacing student grade with a worse grade
+Not adding a grade to a none existing student
+Adding grade to course that don't align
+adding invalid grades
+
+
+#3
+Grades cannot be greater than 100 and lower than 0
+Lower grades cannot override better grades

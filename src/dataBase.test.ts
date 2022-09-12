@@ -73,12 +73,78 @@ describe('tests for addStudent', () => {
     });
 
     test('addGrade for an existing student', () => {
+      //creates student ID with Name of Tom
       const student1 = db.addStudent("Tom");
+
+      //Course Number
       const course1 = "CS4530";
+
+      //Creates Transcript
       const transcript = db.getTranscript(student1);
+
+      //Adds Grade
       db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 90});
 
-      expect(stuz)
+      //Expects grade to be added and to equal 90
+      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(90);
+    })
+
+    test('Override old grade with a better grade', () => {
+      //creates student ID with Name of Tom
+      const student1 = db.addStudent("Tom");
+
+      //Course Number
+      const course1 = "CS4530";
+
+      //Creates Transcript
+      const transcript = db.getTranscript(student1);
+
+      //Adds Grade
+      db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 50});
+
+      //Expects grade to be added and to equal 90
+      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(50);
+
+      //adds a better grade
+      db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 100});
+
+      //Expects a new and better grade
+      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(100);
+    })
+
+    test('Dose not add a new grade, since new grade is lower', () => {
+      //creates student ID with Name of Tom
+      const student1 = db.addStudent("Tom");
+
+      //Course Number
+      const course1 = "CS4530";
+
+      //Creates Transcript
+      const transcript = db.getTranscript(student1);
+
+      //Adds Grade
+      db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 70});
+
+      //Expects grade to be added and to equal 90
+      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(70);
+
+       //Adds worst grade
+       db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 50});
+
+       //Expects the old grade
+       expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(50);
+    })
+
+    test('Adds Grade to none existing student', () => {
+     
+    })
+
+    test('Adds Grade to different course', () => {
+     
+    })
+
+    test('Adds a Grade that is invalid <100 >0', () => {
+     
     })
 
 })
