@@ -65,12 +65,21 @@ describe('tests for addStudent', () => {
       expect(() => db.getTranscript(1)).toThrowError()
     });
 
-    // test('getTranscript should throw an error when given a bad ID (bogus version)',
-    // () => {
-    //   // in an empty database, all IDs are bad :)
-    //   // Note: the expression you expect to throw must be wrapped in a (() => ...)
-    //   expect(db.getTranscript(1)).toThrowError()
-    // });
+    test('getTranscript should throw an error when given a bad ID (bogus version)',
+    () => {
+      // in an empty database, all IDs are bad :)
+      // Note: the expression you expect to throw must be wrapped in a (() => ...)
+      expect(db.getTranscript(1)).toThrowError()
+    });
+
+    test('addGrade for an existing student', () => {
+      const student1 = db.addStudent("Tom");
+      const course1 = "CS4530";
+      const transcript = db.getTranscript(student1);
+      db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 90});
+
+      expect(stuz)
+    })
 
 })
 
