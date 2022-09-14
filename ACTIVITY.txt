@@ -1,0 +1,12 @@
+#2
+- Adding a grade for a course that doesn't exist on the student transcript should create a new course to the student's transcript with the given correlating grade
+- Replacing student grade with a new grade for an existing course should override the old grade regardless if the old grade was higher, lower or equal to the new grade
+- Check that the transcript after adding a new courseGrade contains both the new course and the grade for the given student on their transcript
+- Check that the transcript after adding an existing courseGrade does not create a duplicate course and the old course remains with the changed grade
+
+
+
+#3
+- Throwing an error when attempting to add a grade that is greater than 100 or less than 0
+- Throwing an error when adding a grade to a none existent student
+- Throwing an error when the given course and the course in the courseGrade does not align

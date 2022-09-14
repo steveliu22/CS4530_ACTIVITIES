@@ -51,7 +51,7 @@ export class DataBase implements IDataBase {
 
         
     deleteStudent (id: StudentID): void  {
-        let studentTranscript = this.getTranscript(id);
+        const studentTranscript = this.getTranscript(id);
 
         const transcriptIndex = this.transcripts.findIndex((transcript) => {
             return transcript.student.studentID === id;
@@ -63,10 +63,10 @@ export class DataBase implements IDataBase {
 
     addGrade (id: Student, course: Course, courseGrade: CourseGrade) : void {
         
-        let studentTranscript:Transcript = this.getTranscript(id.studentID);
+        const studentTranscript : Transcript = this.getTranscript(id.studentID);
 
         //if course do not match
-        if(course != courseGrade.course) {
+        if(course !== courseGrade.course) {
             throw new Error("Courses do not align");
         }
 
@@ -90,7 +90,7 @@ export class DataBase implements IDataBase {
 
         if(doesCourseExists) {
             //replacing old course grade
-            orginalCourseGrade.grade == courseGrade.grade;
+            orginalCourseGrade.grade = courseGrade.grade;
         }
         else {
             studentTranscript.grades.push(courseGrade);
@@ -103,13 +103,12 @@ export class DataBase implements IDataBase {
     getGrade (id: Student, course: Course) : CourseGrade {
         const studentTranscript = this.getTranscript(id.studentID);
 
-        studentTranscript.grades.forEach(grade => {
-
+        for(const grade of studentTranscript.grades) {
+            
             if(grade.course === course) {
                 return grade;
             }
-            
-        });
+        }
 
         throw new Error("Could not find course")
     }

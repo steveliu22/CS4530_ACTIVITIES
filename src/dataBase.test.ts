@@ -69,10 +69,38 @@ describe('tests for addStudent', () => {
     () => {
       // in an empty database, all IDs are bad :)
       // Note: the expression you expect to throw must be wrapped in a (() => ...)
-      expect(db.getTranscript(1)).toThrowError()
+      expect(() => db.getTranscript(1)).toThrowError()
     });
 
-    test('addGrade for an existing student', () => {
+    test('addGrade thows an error when adding a grade to a non-existent student', () => {
+      const studentIDTom : StudentID = db.addStudent("Tom")
+      const studentCharles : Student = {studentID: 2, studentName: "Charles"};
+
+      expect(() => db.addGrade(studentCharles, "CS4530", {course: "CS4530", grade: 2})).toThrowError('unknown ID')
+    })
+    
+    test('addGrade throws an error when attempting to add a grade that is greater than 100 or less than 0', () => {
+      const studentIDTom : StudentID = db.addStudent("Tom")
+      const studentTom : Student = {studentID: studentIDTom, studentName: "Tom"};
+
+      //verifies initial transcript for tom is empty
+      expect(db.getTranscript(studentIDTom).grades).toEqual([])
+
+      expect(() => db.addGrade(studentTom, "CS4530", {course: "CS4530", grade: -1})).toThrowError('Not A Valid Grade')
+      expect(() => db.addGrade(studentTom, "CS4530", {course: "CS4530", grade: 101})).toThrowError('Not A Valid Grade')
+
+      //verifies transcript for tom is still empty
+      expect(db.getTranscript(studentIDTom).grades).toEqual([])
+    })
+
+    test('addGrade throws an error when the given course and the course in the courseGrade does not align', () => {
+      const studentIDTom : StudentID = db.addStudent("Tom")
+      const studentTom : Student = {studentID: studentIDTom, studentName: "Tom"};
+
+      expect(() => db.addGrade(studentTom, "CS4530", {course: "CS4531", grade: 4})).toThrowError('Courses do not align')
+    })
+
+    test('addGrade for a course that doesn\'t exist on the student transcript should create a new course to the student\'s transcript with the given correlating grade', () => {
       //creates student ID with Name of Tom
       const student1 = db.addStudent("Tom");
 
@@ -81,71 +109,102 @@ describe('tests for addStudent', () => {
 
       //Creates Transcript
       const transcript = db.getTranscript(student1);
+
+      expect(db.getTranscript(student1).grades).toEqual([])
 
       //Adds Grade
       db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 90});
 
-      //Expects grade to be added and to equal 90
-      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(90);
+      expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 90}])
     })
 
-    test('Override old grade with a better grade', () => {
+
+    test('addGrade with a new grade for an existing course should override the old grade regardless if the old grade was higher, lower or equal to the new grade', () => {
       //creates student ID with Name of Tom
       const student1 = db.addStudent("Tom");
-
       //Course Number
       const course1 = "CS4530";
-
       //Creates Transcript
       const transcript = db.getTranscript(student1);
-
+      const tom : Student = {studentID: student1, studentName: "Tom"}
       //Adds Grade
-      db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 50});
 
-      //Expects grade to be added and to equal 90
-      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(50);
+      db.addGrade(tom, course1, {course: course1, grade: 50});
+      //Expects a new course called CS4530 to be added to Tom's transcript and their grade for the course would be equal 50
+      expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 50}])
+      //Expects the grade for Tom's CS4530 course to be 50
+      expect(db.getGrade(tom, course1).grade).toEqual(50);
 
-      //adds a better grade
-      db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 100});
+      //Replacing Tom's grade in CS4530 to 90
+      db.addGrade(tom, course1, {course: course1, grade: 90});
+      //Expects no new courseGrade to be added to Tom's transcript
+      expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 90}])
+      //Expects the grade for Tom's CS4530 course to be 90
+      expect(db.getGrade(tom , course1).grade).toEqual(90);
 
-      //Expects a new and better grade
-      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(100);
+      //Replacing Tom's grade in CS4530 to 30
+      db.addGrade(tom, course1, {course: course1, grade: 30});
+      //Expects no new courseGrade to be added to Tom's transcript
+      expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 30}])
+      //Expects the grade for Tom's CS4530 course to be 30
+      expect(db.getGrade(tom , course1).grade).toEqual(30);
+
+      //Not changing Tom's grade in CS4530 at all
+      db.addGrade(tom, course1, {course: course1, grade: 30});
+      //Expects no new courseGrade to be added to Tom's transcript
+      expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 30}])
+      //Expects the grade for Tom's CS4530 course to still be 30
+      expect(db.getGrade(tom , course1).grade).toEqual(30);
     })
 
-    test('Dose not add a new grade, since new grade is lower', () => {
+    test('addGrade the transcript after adding a new courseGrade contains both the new course and the grade for the given student on their transcript', () => {
       //creates student ID with Name of Tom
       const student1 = db.addStudent("Tom");
-
       //Course Number
       const course1 = "CS4530";
-
-      //Creates Transcript
+      const course2 = "CS1800";
+      //Retrieves Transcript for Tom
       const transcript = db.getTranscript(student1);
+      const tom : Student = {studentID: student1, studentName: "Tom"}
 
-      //Adds Grade
-      db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 70});
+      //verifies initial transcript for tom is empty
+      expect(transcript.grades).toEqual([])
 
-      //Expects grade to be added and to equal 90
-      expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(70);
-
-       //Adds worst grade
-       db.addGrade({studentID: student1, studentName: "Tom"}, course1, {course: course1, grade: 50});
+   
+      db.addGrade(tom, course1, {course: course1, grade: 70});
+      //verifies the new course, CS4530, with Tom's grade for the course has been added
+      expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 70}])
+      
+      db.addGrade(tom, course2, {course: course2, grade: 20});
 
        //Expects the old grade
-       expect(db.getGrade({studentID: student1, studentName: "Tom"},course1)).toEqual(50);
+      expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 70}, {course: "CS1800", grade: 20}])
     })
 
-    test('Adds Grade to none existing student', () => {
-     
+    test('addGrade, check that the transcript after adding an existing courseGrade does not create a duplicate course and the old course remains with the changed grade', () => {
+          //creates student ID with Name of Tom
+          const student1 = db.addStudent("Tom");
+          //Course Number
+          const course1 = "CS4530";
+          //Retrieves Transcript for Tom
+          const transcript = db.getTranscript(student1);
+          const tom : Student = {studentID: student1, studentName: "Tom"}
+    
+          //verifies initial transcript for tom is empty
+          expect(transcript.grades).toEqual([])
+    
+       
+          db.addGrade(tom, course1, {course: course1, grade: 70});
+          //verifies the new course, CS4530, with Tom's grade for the course has been added
+          expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 70}])
+          
+          db.addGrade(tom, course1, {course: course1, grade: 70});
+    
+           //Expects the old grade
+          expect(db.getTranscript(student1).grades).toEqual([{course: "CS4530", grade: 70}])
     })
 
-    test('Adds Grade to different course', () => {
-     
-    })
 
-    test('Adds a Grade that is invalid <100 >0', () => {
-     
-    })
 
 })
 
